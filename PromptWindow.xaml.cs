@@ -26,10 +26,14 @@ public partial class PromptWindow : Window
         _overlay = overlay;
         _companion.ResponseReceived += ShowResponse;
         _companion.FeedbackReceived += ShowError;
+        _companion.ScreenCaptureStarting += HideForScreenCapture;
+        _companion.ScreenCaptureCompleted += RestoreAfterScreenCapture;
         Closed += (_, _) =>
         {
             _companion.ResponseReceived -= ShowResponse;
             _companion.FeedbackReceived -= ShowError;
+            _companion.ScreenCaptureStarting -= HideForScreenCapture;
+            _companion.ScreenCaptureCompleted -= RestoreAfterScreenCapture;
         };
         Loaded += (_, _) =>
         {
@@ -172,6 +176,10 @@ public partial class PromptWindow : Window
             ResizeForResponse();
         });
     }
+
+    private void HideForScreenCapture() => Dispatcher.Invoke(() => Opacity = 0);
+
+    private void RestoreAfterScreenCapture() => Dispatcher.Invoke(() => Opacity = 1);
 
     private void ResizeForResponse()
     {

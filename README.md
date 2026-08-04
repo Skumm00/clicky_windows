@@ -11,9 +11,9 @@ This project exists because of two earlier projects:
 
 The features listed below are additions and refinements made in this fork. Credit for the original concept and upstream implementations remains with their respective creators. This fork is an independent community project and does not imply their endorsement.
 
-## Changes Made to the Windows Port
+## What changed in this fork
 
-Compared with the original Windows version, this version substantially updates:
+Compared with the original Windows port, this version adds or substantially updates:
 
 - A compact glass-style chat panel positioned near the edge of the desktop
 - Typed prompts with Enter-to-send and Shift+Enter for a new line
@@ -26,6 +26,7 @@ Compared with the original Windows version, this version substantially updates:
 - Smooth target movement that waits for the user to approach before returning
 - Multi-monitor and Windows DPI-aware coordinate conversion
 - Explicit click and double-click actions requested through the AI response
+- Two-step commands that open an allowlisted Windows app, recapture its window, and click one requested visible control
 - Safe launching of common Windows apps such as Chrome, Edge, Notepad, Explorer, and Settings
 - A screen-area selection tool for sending only a chosen region to the AI
 - Focused Windows UI Rescue tools for a missing or frozen taskbar and disappeared desktop icons
