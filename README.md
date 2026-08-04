@@ -11,9 +11,9 @@ This project exists because of two earlier projects:
 
 The features listed below are additions and refinements made in this fork. Credit for the original concept and upstream implementations remains with their respective creators. This fork is an independent community project and does not imply their endorsement.
 
-## What changed in this fork
+## Changes Made to the Windows Port
 
-Compared with the original Windows port, this version adds or substantially updates:
+Compared with the original Windows version, this version substantially updates:
 
 - A compact glass-style chat panel positioned near the edge of the desktop
 - Typed prompts with Enter-to-send and Shift+Enter for a new line
