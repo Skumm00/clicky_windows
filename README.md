@@ -1,8 +1,7 @@
 
+https://github.com/user-attachments/assets/bcf10247-bccd-46f6-a6fa-13f9bb329016
+# Video Demo (very blurry, mb) 
 
-https://github.com/user-attachments/assets/ba0378b1-93e3-4e95-a490-2c3ea2fa65ae
-# Video Demo 
-(very blury, mb) 
 # Clicky for Windows
 
 Clicky for Windows is an open-source Windows adaptation of the HeyClicky AI desktop companion. It can look at your screen when asked, answer typed or spoken questions, point to visible interface elements, and help with a small set of Windows-specific tasks.
