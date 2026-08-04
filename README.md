@@ -27,6 +27,7 @@ Compared with the original Windows port, this version adds or substantially upda
 - Multi-monitor and Windows DPI-aware coordinate conversion
 - Explicit click and double-click actions requested through the AI response
 - Two-step commands that open an allowlisted Windows app, recapture its window, and click one requested visible control
+- An instant local shortcut for locating the MediHacks desktop folder without an AI request
 - Safe launching of common Windows apps such as Chrome, Edge, Notepad, Explorer, and Settings
 - A screen-area selection tool for sending only a chosen region to the AI
 - Focused Windows UI Rescue tools for a missing or frozen taskbar and disappeared desktop icons
