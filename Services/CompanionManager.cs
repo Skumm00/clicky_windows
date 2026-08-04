@@ -218,7 +218,9 @@ public class CompanionManager : IAsyncDisposable
 
         if (!string.IsNullOrWhiteSpace(transcript))
         {
-            if (WindowsAppLauncher.TryParse(transcript, out var launchRequest))
+            if (MediHacksLocator.IsRequest(transcript))
+                await ProcessMediHacksLocationAsync();
+            else if (WindowsAppLauncher.TryParse(transcript, out var launchRequest))
                 await ProcessLaunchRequestAsync(transcript, launchRequest);
             else if (WindowsUiRescue.TryMatch(transcript, out var rescue))
                 await ProcessWindowsUiRescueAsync(rescue);
@@ -263,6 +265,12 @@ public class CompanionManager : IAsyncDisposable
         _sessionCts?.Cancel();
         _sessionCts?.Dispose();
         _sessionCts = new CancellationTokenSource();
+
+        if (MediHacksLocator.IsRequest(prompt))
+        {
+            await ProcessMediHacksLocationAsync();
+            return;
+        }
 
         if (WindowsAppLauncher.TryParse(prompt, out var launchRequest))
         {
@@ -402,6 +410,38 @@ public class CompanionManager : IAsyncDisposable
             Logger.Error($"Windows task failed: {ex.Message}");
             FeedbackReceived?.Invoke("Clicky couldn't complete that Windows task.");
             State = AppState.Idle;
+        }
+    }
+
+    private async Task ProcessMediHacksLocationAsync()
+    {
+        try
+        {
+            Logger.Log("[Instant location] Locating MediHacks desktop folder");
+            var result = await MediHacksLocator.LocateAsync(_sessionCts!.Token);
+            State = AppState.Idle;
+
+            if (!result.Found)
+            {
+                Logger.Log($"[Instant location] {result.Message}");
+                FeedbackReceived?.Invoke(result.Message);
+                return;
+            }
+
+            Logger.Log($"[Instant location] MediHacks at physical ({result.X:0},{result.Y:0})");
+            WpfApp.Current.Dispatcher.Invoke(() =>
+                PointReceived?.Invoke(result.X, result.Y, "MediHacks"));
+            ResponseReceived?.Invoke(result.Message);
+        }
+        catch (OperationCanceledException)
+        {
+            State = AppState.Idle;
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Instant MediHacks location failed: {ex.Message}");
+            State = AppState.Idle;
+            FeedbackReceived?.Invoke("Clicky couldn't locate MediHacks on the desktop.");
         }
     }
 
