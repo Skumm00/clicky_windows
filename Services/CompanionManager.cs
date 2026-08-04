@@ -37,6 +37,8 @@ public class CompanionManager : IAsyncDisposable
     public event Action<WindowsUiRescueKind>? WindowsUiRescueRequested;
     /// <summary>Fires after a completed response so the typed prompt window can display it.</summary>
     public event Action<string>? ResponseReceived;
+    public event Action? ScreenCaptureStarting;
+    public event Action? ScreenCaptureCompleted;
 
     private AppState _state = AppState.Idle;
     private AppState State
@@ -216,12 +218,8 @@ public class CompanionManager : IAsyncDisposable
 
         if (!string.IsNullOrWhiteSpace(transcript))
         {
-            if (WindowsAppLauncher.TryLaunch(transcript, out var launchResult))
-            {
-                Logger.Log($"[Windows launcher] {launchResult}");
-                ResponseReceived?.Invoke(launchResult);
-                State = AppState.Idle;
-            }
+            if (WindowsAppLauncher.TryParse(transcript, out var launchRequest))
+                await ProcessLaunchRequestAsync(transcript, launchRequest);
             else if (WindowsUiRescue.TryMatch(transcript, out var rescue))
                 await ProcessWindowsUiRescueAsync(rescue);
             else
@@ -261,17 +259,16 @@ public class CompanionManager : IAsyncDisposable
             return;
         }
 
-        if (WindowsAppLauncher.TryLaunch(prompt, out var launchResult))
-        {
-            Logger.Log($"[Windows launcher] {launchResult}");
-            ResponseReceived?.Invoke(launchResult);
-            return;
-        }
-
         State = AppState.Processing;
         _sessionCts?.Cancel();
         _sessionCts?.Dispose();
         _sessionCts = new CancellationTokenSource();
+
+        if (WindowsAppLauncher.TryParse(prompt, out var launchRequest))
+        {
+            await ProcessLaunchRequestAsync(prompt, launchRequest);
+            return;
+        }
 
         List<ScreenshotResult> screenshots;
         try
@@ -339,6 +336,73 @@ public class CompanionManager : IAsyncDisposable
         }
 
         State = AppState.Idle;
+    }
+
+    private async Task ProcessLaunchRequestAsync(
+        string originalPrompt,
+        WindowsLaunchRequest request)
+    {
+        if (!WindowsAppLauncher.TryLaunch(request, out var launchResult))
+        {
+            ResponseReceived?.Invoke(launchResult);
+            State = AppState.Idle;
+            return;
+        }
+
+        Logger.Log($"[Windows task] {launchResult}");
+        if (string.IsNullOrWhiteSpace(request.FollowUpPrompt))
+        {
+            ResponseReceived?.Invoke(launchResult);
+            State = AppState.Idle;
+            return;
+        }
+
+        try
+        {
+            var windowReady = await WindowsAppLauncher.WaitForWindowAsync(request, _sessionCts!.Token);
+            if (!windowReady)
+            {
+                FeedbackReceived?.Invoke($"{request.DisplayName} opened, but Clicky couldn't find its window.");
+                State = AppState.Idle;
+                return;
+            }
+
+            List<ScreenshotResult> screenshots;
+            await WpfApp.Current.Dispatcher.InvokeAsync(
+                () => ScreenCaptureStarting?.Invoke(),
+                System.Windows.Threading.DispatcherPriority.Send);
+            await WpfApp.Current.Dispatcher.InvokeAsync(
+                () => { },
+                System.Windows.Threading.DispatcherPriority.Render);
+            try
+            {
+                screenshots = _screen.CaptureAll();
+                Logger.Log($"[Windows task] Captured {screenshots.Count} display(s) after opening {request.DisplayName}");
+            }
+            finally
+            {
+                await WpfApp.Current.Dispatcher.InvokeAsync(
+                    () => ScreenCaptureCompleted?.Invoke(),
+                    System.Windows.Threading.DispatcherPriority.Send);
+            }
+
+            var taskPrompt = $"""
+                The user's exact request was: {originalPrompt}
+                {request.DisplayName} is now open and foregrounded. Complete only this follow-up action: {request.FollowUpPrompt}
+                Inspect the new screenshot. If the requested control is clearly visible, emit exactly one CLICK or DOUBLE_CLICK tag for it. If it is not visible, do not guess and explain briefly.
+                """;
+            await ProcessResponseAsync(taskPrompt, screenshots);
+        }
+        catch (OperationCanceledException)
+        {
+            State = AppState.Idle;
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Windows task failed: {ex.Message}");
+            FeedbackReceived?.Invoke("Clicky couldn't complete that Windows task.");
+            State = AppState.Idle;
+        }
     }
 
     // ── Claude + TTS ────────────────────────────────────────────────────────
@@ -487,7 +551,7 @@ public class CompanionManager : IAsyncDisposable
     private static bool IsExplicitActionRequest(string prompt) =>
         System.Text.RegularExpressions.Regex.IsMatch(
             prompt,
-            @"\b(click|open|press|select|choose|launch|start)\b",
+            @"\b(click|double[- ]?click|press|select|choose)\b",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase |
             System.Text.RegularExpressions.RegexOptions.CultureInvariant);
 
