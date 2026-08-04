@@ -17,6 +17,7 @@ public partial class PromptWindow : Window
     private readonly OverlayWindow _overlay;
     private bool _hasResponse;
     private int _resizeVersion;
+    private System.Drawing.Rectangle? _pendingSelection;
 
     public PromptWindow(CompanionManager companion, OverlayWindow overlay)
     {
@@ -95,7 +96,9 @@ public partial class PromptWindow : Window
         PromptBox.Clear();
         PromptBox.IsEnabled = false;
         SendButton.IsEnabled = false;
-        StatusText.Text = "Looking...";
+        var selectedBounds = _pendingSelection;
+        _pendingSelection = null;
+        StatusText.Text = selectedBounds.HasValue ? "Looking at selection..." : "Looking...";
         ResponseScroller.Visibility = Visibility.Collapsed;
         AnimateHeight(CompactHeight);
 
@@ -103,7 +106,9 @@ public partial class PromptWindow : Window
         var overlayWasVisible = _overlay.IsVisible;
         _overlay.Hide();
         await Dispatcher.InvokeAsync(() => { }, System.Windows.Threading.DispatcherPriority.Render);
-        var requestTask = _companion.AskTypedAsync(prompt);
+        var requestTask = selectedBounds.HasValue
+            ? _companion.AskTypedRegionAsync(prompt, selectedBounds.Value)
+            : _companion.AskTypedAsync(prompt);
         Opacity = 1;
         if (overlayWasVisible)
             _overlay.Show();
@@ -136,27 +141,16 @@ public partial class PromptWindow : Window
             return;
         }
 
-        var prompt = PromptBox.Text.Trim();
+        _pendingSelection = bounds.Value;
         _hasResponse = false;
-        PromptBox.Clear();
-        PromptBox.IsEnabled = false;
-        SendButton.IsEnabled = false;
-        SelectAreaButton.IsEnabled = false;
-        StatusText.Text = "Looking at selection...";
+        ResponseText.Text = "";
         ResponseScroller.Visibility = Visibility.Collapsed;
         AnimateHeight(CompactHeight);
-
-        var requestTask = _companion.AskTypedRegionAsync(prompt, bounds.Value);
         Show();
         if (overlayWasVisible)
             _overlay.Show();
         Activate();
-        await requestTask;
-
-        PromptBox.IsEnabled = true;
-        SendButton.IsEnabled = true;
-        SelectAreaButton.IsEnabled = true;
-        StatusText.Text = "Ready";
+        StatusText.Text = "Selection ready";
         FocusPrompt();
     }
 

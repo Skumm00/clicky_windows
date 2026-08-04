@@ -55,7 +55,7 @@ Explicit `CLICK` and `DOUBLE_CLICK` instructions are also supported. These actio
 
 ### Select part of the screen
 
-Selection mode dims the current display and lets you drag a clear crop rectangle around the exact area you want to discuss. Press Escape to cancel safely.
+Selection mode dims the current display and lets you drag a clear crop rectangle around the exact area you want to discuss. After selecting, Clicky waits for your next typed question and sends that saved region with the prompt. Press Escape to cancel safely.
 
 ### Voice questions
 
