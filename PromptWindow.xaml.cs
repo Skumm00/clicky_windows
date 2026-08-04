@@ -44,6 +44,14 @@ public partial class PromptWindow : Window
 
     public void FocusPrompt() => PromptBox.Focus();
 
+    public void HideAndClearOutput()
+    {
+        Hide();
+        ClearPreviousOutput();
+    }
+
+    public void PrepareForShow() => ClearPreviousOutput();
+
     public void PositionNearCursor()
     {
         if (!Win32.GetCursorPos(out var cursor))
@@ -235,7 +243,22 @@ public partial class PromptWindow : Window
         return false;
     }
 
-    private void CloseClick(object sender, RoutedEventArgs e) => Hide();
+    private void CloseClick(object sender, RoutedEventArgs e) => HideAndClearOutput();
+
+    private void ClearPreviousOutput()
+    {
+        _hasResponse = false;
+        ResponseText.Text = "";
+        ResponseText.Foreground = System.Windows.Media.Brushes.White;
+        ResponseScroller.Visibility = Visibility.Collapsed;
+
+        var currentHeight = ActualHeight > 0 ? ActualHeight : Height;
+        var bottom = Top + currentHeight;
+        BeginAnimation(HeightProperty, null);
+        BeginAnimation(TopProperty, null);
+        Height = CompactHeight;
+        Top = bottom - CompactHeight;
+    }
 
     private void PositionInBottomRight()
     {

@@ -88,6 +88,7 @@ public partial class MainWindow : Window
 
         if (_promptWindow is not null)
         {
+            _promptWindow.PrepareForShow();
             _promptWindow.Show();
             _promptWindow.Activate();
             _promptWindow.FocusPrompt();
@@ -104,7 +105,7 @@ public partial class MainWindow : Window
     {
         if (_promptWindow is { IsVisible: true })
         {
-            _promptWindow.Hide();
+            _promptWindow.HideAndClearOutput();
             return;
         }
 
@@ -114,6 +115,7 @@ public partial class MainWindow : Window
             _promptWindow.Closed += (_, _) => _promptWindow = null;
         }
 
+        _promptWindow.PrepareForShow();
         _promptWindow.Show();
         _promptWindow.PositionNearCursor();
         _promptWindow.Activate();
