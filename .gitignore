@@ -1,0 +1,21 @@
+# Build output
+bin/
+obj/
+.dotnet-home/
+
+# Visual Studio / Rider
+.vs/
+*.user
+*.suo
+*.userprefs
+*.userosscache
+*.sln.docstates
+
+# NuGet
+*.nupkg
+**/packages/
+!**/packages/build/
+
+# OS
+Thumbs.db
+.DS_Store

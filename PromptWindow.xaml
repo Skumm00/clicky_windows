@@ -1,0 +1,95 @@
+<Window x:Class="ClickyWindows.PromptWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Clicky" Width="390" Height="126" MinWidth="390" MinHeight="126" MaxHeight="520"
+        WindowStartupLocation="Manual" WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Foreground="#F8FAFC" FontFamily="Segoe UI" ResizeMode="NoResize"
+        ShowInTaskbar="True" Topmost="True">
+    <Window.Resources>
+        <SolidColorBrush x:Key="Muted" Color="#AEBAC4"/>
+        <SolidColorBrush x:Key="Accent" Color="#4A9CFF"/>
+        <Style TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonSurface" Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonSurface" Property="Opacity" Value="0.88"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonSurface" Property="Opacity" Value="0.68"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonSurface" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border x:Name="GlassPanel" Margin="1" CornerRadius="9" Background="#D91A2528"
+            BorderThickness="0" MouseLeftButtonDown="GlassPanelMouseLeftButtonDown">
+        <Border.Effect>
+            <DropShadowEffect Color="#001217" BlurRadius="24" ShadowDepth="8" Opacity="0.55"/>
+        </Border.Effect>
+        <Grid Margin="12,10,12,11">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid Height="25">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Path Width="15" Height="16" Data="M1,1 L1,15 L14,8 Z" Fill="#0055FF" Stretch="Fill" Margin="0,0,7,0"/>
+                <TextBlock Grid.Column="1" Text="Clicky" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2" x:Name="StatusText" Text="Ready" Foreground="{StaticResource Muted}"
+                           FontSize="10" VerticalAlignment="Center" Margin="9,1,0,0"/>
+                <Button Grid.Column="3" Content="x" Foreground="#C7D0D7" FontSize="15" Width="22" Height="22"
+                        Click="CloseClick" ToolTip="Hide Clicky"/>
+            </Grid>
+
+            <ScrollViewer x:Name="ResponseScroller" Grid.Row="1" Visibility="Collapsed" MaxHeight="360"
+                          VerticalScrollBarVisibility="Auto" Margin="2,12,3,5">
+                <TextBlock x:Name="ResponseText" Foreground="#F4F7F9" FontSize="12.5" LineHeight="18"
+                           TextWrapping="Wrap"/>
+            </ScrollViewer>
+
+            <Border Grid.Row="2" Margin="0,8,0,0" Height="40" Background="#73091316"
+                    BorderThickness="0" CornerRadius="7" Padding="9,5">
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <TextBox x:Name="PromptBox" AcceptsReturn="True" TextWrapping="Wrap" BorderThickness="0" Background="Transparent"
+                             Foreground="#FFFFFF" CaretBrush="#FFFFFF" FontSize="12" MinHeight="20" MaxHeight="30"
+                             VerticalContentAlignment="Center" VerticalScrollBarVisibility="Auto" PreviewKeyDown="PromptPreviewKeyDown"/>
+                    <Button Grid.Column="1" x:Name="SelectAreaButton" Width="25" Height="25" Margin="6,0,0,0"
+                            Click="SelectAreaClick" ToolTip="Select a screen area">
+                        <Path Data="M3,9 L3,3 L9,3 M16,3 L22,3 L22,9 M22,16 L22,22 L16,22 M9,22 L3,22 L3,16"
+                              Stroke="#AFC8D6" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                              Stretch="Uniform" Margin="5"/>
+                    </Button>
+                    <Button Grid.Column="2" x:Name="SendButton" Width="25" Height="25" Margin="5,0,0,0"
+                            Click="SendClick" ToolTip="Send">
+                        <Grid Width="25" Height="25">
+                            <Ellipse Fill="#1766C9"/>
+                            <Path Data="M8,6 L18,12.5 L8,19 Z" Fill="White" Stretch="Uniform" Margin="7"/>
+                        </Grid>
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
